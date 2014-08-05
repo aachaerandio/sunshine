@@ -9,6 +9,7 @@
     <string name="action_refresh" translatable="false">Refresh</string>
     <string name="title_activity_detail">Details</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="action_map">Map</string>
 
     <!-- Key name for storing location in SharedPreferences -->
     <string name="pref_location_key">location</string>
@@ -21,5 +22,6 @@
     <string name="pref_units_key">units</string>
     <string name="pref_units_label">Temperature Units</string>
     <string name="pref_units_default">Metric</string>
+    <string name="action_share">Share</string>
 
 </resources>

@@ -85,7 +85,6 @@ public class ForecastFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.forecastfragment, menu);
-        //super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -98,6 +97,7 @@ public class ForecastFragment extends Fragment {
             updateWeather();
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -105,8 +105,6 @@ public class ForecastFragment extends Fragment {
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = preferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-        String tempUnits = preferences.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_default));
-
 
         // Pass the location into the fetch weather task
         weatherTask.execute(location);
