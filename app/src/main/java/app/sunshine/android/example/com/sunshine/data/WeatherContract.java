@@ -18,6 +18,7 @@ public class WeatherContract {
     public static final String PATH_WEATHER = "weather";
     public static final String PATH_LOCATION = "location";
 
+
     /* Inner class that defines the table contents of the weather table */
     public static final class WeatherEntry implements BaseColumns {
 
