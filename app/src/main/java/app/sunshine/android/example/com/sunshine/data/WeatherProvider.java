@@ -250,26 +250,51 @@ public class WeatherProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
+        int rowsDel;
 
         switch (match) {
             case WEATHER: {
-
+                rowsDel = db.delete(WeatherContract.WeatherEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             }
-
             case LOCATION: {
-
+                rowsDel = db.delete(WeatherContract.LocationEntry.TABLE_NAME, selection, selectionArgs);
+                break;
             }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
-
         // Notify ContentObservers
-        return 0;
+        //a null selection deletes all rows
+        if(null != selection || 0 != rowsDel) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsDel;
     }
 
     @Override
     public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final int match = sUriMatcher.match(uri);
+        int rowsUpdated;
 
+        switch (match) {
+            case WEATHER: {
+                rowsUpdated = db.update(WeatherContract.WeatherEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+                break;
+            }
+            case LOCATION: {
+                rowsUpdated = db.update(WeatherContract.LocationEntry.TABLE_NAME, contentValues, selection, selectionArgs);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
 
         // Notify ContentObservers
-        return 0;
+        if (0 != rowsUpdated) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+        return rowsUpdated;
     }
 }
