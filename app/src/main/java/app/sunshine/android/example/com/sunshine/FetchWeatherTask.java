@@ -52,8 +52,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
     private ArrayAdapter<String> mForecastAdapter;
     String locationQuery;
 
-    public FetchWeatherTask (Context context) {
+    public FetchWeatherTask (Context context, ArrayAdapter<String> forecastAdapter) {
         mContext = context;
+        mForecastAdapter = forecastAdapter;
     }
 
     private boolean DEBUG = true;
