@@ -205,6 +205,7 @@ public class TestProvider extends AndroidTestCase {
         //ContentValues values = TestDb.createNorthPoleLocationValues();
         ContentValues values = TestDb.getLocationContentValues();
 
+        // Insert a record we want to update
         Uri locationUri = mContext.getContentResolver().
                 insert(LocationEntry.CONTENT_URI, values);
         long locationRowId = ContentUris.parseId(locationUri);
@@ -221,6 +222,7 @@ public class TestProvider extends AndroidTestCase {
                 LocationEntry.CONTENT_URI, updatedValues, LocationEntry._ID + "= ?",
                 new String[] { Long.toString(locationRowId)});
 
+        // We'd expect 1 record
         assertEquals(count, 1);
 
         // A cursor is your primary interface to the query results.
@@ -233,6 +235,8 @@ public class TestProvider extends AndroidTestCase {
         );
 
         TestDb.validateCursor(updatedValues, cursor);
+
+        cursor.close();
     }
 
     // Make sure we can still delete after adding/updating stuff
