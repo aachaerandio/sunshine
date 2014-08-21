@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,10 +20,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import app.sunshine.android.example.com.sunshine.data.WeatherContract;
@@ -65,7 +65,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public static final int COL_WEATHER_MIN_TEMP = 4;
     public static final int COL_LOCATION_SETTING = 5;
 
-    ArrayAdapter mForecastAdapter;
+    private SimpleCursorAdapter mForecastAdapter;
 
     public ForecastFragment() {
     }
@@ -80,13 +80,47 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        // The ArrayAdapter will take data from a source and
-        // use it to populate the ListView it's attached to.
-        mForecastAdapter = new ArrayAdapter<String>(
+        // The SimpleCursorAdapter will take data from database through the Loader
+        // and use it to populate the ListView it's attached to.
+        mForecastAdapter = new SimpleCursorAdapter(
                 getActivity(),
                 R.layout.list_item_forecast,
-                R.id.list_item_forecast_textview, // The ID of the textView to populate
-                new ArrayList<String>());
+                null,
+                // from columns
+                new String[]{WeatherEntry.COLUMN_DATETEXT,
+                            WeatherEntry.COLUMN_SHORT_DESC,
+                            WeatherEntry.COLUMN_MAX_TEMP,
+                            WeatherEntry.COLUMN_MIN_TEMP},
+                // to views
+                new int[]{R.id.list_item_date_textview,
+                            R.id.list_item_forecast_textview,
+                            R.id.list_item_high_textview,
+                            R.id.list_item_low_textview},
+                0
+                );
+
+        mForecastAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                boolean isMetric = Utility.isMetric(getActivity());
+                switch (columnIndex) {
+                    case COL_WEATHER_MAX_TEMP:
+                    case COL_WEATHER_MIN_TEMP: {
+                        // we have to do some formatting and possibly a conversion
+                        ((TextView) view).setText(Utility.formatTemperature(
+                                cursor.getDouble(columnIndex), isMetric));
+                        return true;
+                    }
+                    case COL_WEATHER_DATE: {
+                        String dateString = cursor.getString(columnIndex);
+                        TextView dateView = (TextView) view;
+                        dateView.setText(Utility.formatDate(dateString));
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
@@ -96,10 +130,22 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                //Toast.makeText(getActivity(), (String)mForecastAdapter.getItem(position), Toast.LENGTH_LONG).show();
-                Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-                detailIntent.putExtra(Intent.EXTRA_TEXT, (String)mForecastAdapter.getItem(position));
-                startActivity(detailIntent);
+                Cursor cursor = mForecastAdapter.getCursor();
+                // Move to the position clicked
+                if(cursor != null && cursor.moveToPosition(position)) {
+                    String date = Utility.formatDate(cursor.getString(COL_WEATHER_DATE));
+                    String desc = cursor.getString(COL_WEATHER_DESC);
+                    boolean isMetric = Utility.isMetric(getActivity());
+                    String high = Utility.formatTemperature(cursor.getDouble(COL_WEATHER_MAX_TEMP),isMetric);
+                    String low = Utility.formatTemperature(cursor.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
+
+                    String detailText = String.format("%s - %s - %s/%s",date, desc, high, low);
+
+                    Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
+                    detailIntent.putExtra(Intent.EXTRA_TEXT, detailText);
+                    startActivity(detailIntent);
+                }
+
             }
         });
 
@@ -133,7 +179,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateWeather() {
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity(), mForecastAdapter);
+        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
         // Refactor preferences with utility class
         String location = Utility.getPreferredLocation(getActivity());
 
@@ -174,11 +220,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+        mForecastAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        mForecastAdapter.swapCursor(null);
     }
 }

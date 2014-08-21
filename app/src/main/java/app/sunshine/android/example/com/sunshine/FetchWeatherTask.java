@@ -4,13 +4,11 @@ import android.annotation.TargetApi;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -24,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
 
@@ -45,22 +42,21 @@ import static app.sunshine.android.example.com.sunshine.data.WeatherContract.get
 /**
  * Created by Araceli on 19/08/2014.
  */
-public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
+public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
     private final Context mContext;
     private ArrayAdapter<String> mForecastAdapter;
     String locationQuery;
 
-    public FetchWeatherTask (Context context, ArrayAdapter<String> forecastAdapter) {
+    public FetchWeatherTask (Context context) {
         mContext = context;
-        mForecastAdapter = forecastAdapter;
     }
 
     private boolean DEBUG = true;
 
     @Override
-    protected String [] doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
 
         // Verify size of params
         if(params.length == 0) {
@@ -151,8 +147,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
         }
 
         try {
-            return getWeatherDataFromJson(forecastJsonStr, days, locationQuery);
+            getWeatherDataFromJson(forecastJsonStr, days, locationQuery);
         } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
 
@@ -160,51 +157,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
         return null;
     }
 
-    @Override
-    protected void onPostExecute (String [] result) {
-        if (result != null) {
-            mForecastAdapter.clear();
-            for (String dayForecast: result) {
-                mForecastAdapter.add(dayForecast);
-            }
-        }
-    }
-
-
-    /* The date/time conversion code is going to be moved outside the asynctask later,
-     * so for convenience we're breaking it out into its own method now.
-     */
-    private String getReadableDateString(long time){
-        // Because the API returns a unix timestamp (measured in seconds),
-        // it must be converted to milliseconds in order to be converted to valid date.
-        Date date = new Date(time * 1000);
-        SimpleDateFormat format = new SimpleDateFormat("E, MMM d");
-        return format.format(date).toString();
-    }
-
-    /**
-     * Prepare the weather high/lows for presentation.
-     */
-    private String formatHighLows(double high, double low) {
-
-        // Data is fetched in Celsius by default
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String unit = sharedPreferences.getString(mContext.getString(R.string.pref_units_key), mContext.getString(R.string.pref_units_default));
-
-        if(unit.equals(mContext.getString(R.string.pref_units_imperial))) {
-            high = (high * 1.8) + 32;
-            low = (low * 1.8) + 32;
-        } else if(!unit.equals(mContext.getString(R.string.pref_units_metric))) {
-            Log.d(LOG_TAG, "Unit type not found" + unit);
-        }
-
-        // For presentation, assume the user doesn't care about tenths of a degree.
-        long roundedHigh = Math.round(high);
-        long roundedLow = Math.round(low);
-
-        String highLowStr = roundedHigh + "/" + roundedLow;
-        return highLowStr;
-    }
 
     /**
      * Take the String representing the complete forecast in JSON Format and
@@ -214,7 +166,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
      * into an Object hierarchy for us.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays,
+    private void getWeatherDataFromJson(String forecastJsonStr, int numDays,
                                             String locationSetting)
             throws JSONException {
 
@@ -262,14 +214,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
         // Insert the location into database
         long locationID = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
-/*        } catch (JSONException e) {
-        Log.e(LOG_TAG, e.getMessage());
-        e.printStackTrace();
-    }*/
-
         Vector<ContentValues> vector = new Vector<ContentValues>(weatherArray.length());
-
-        String[] resultStrs = new String[numDays];
 
         for(int i = 0; i < weatherArray.length(); i++) {
             // Values that will be collected
@@ -326,10 +271,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
 
             vector.add(weatherValues);
 
-            String highAndLow = formatHighLows(high, low);
-            String day = getReadableDateString(dateTime);
-            resultStrs[i] = day + " - " + description + " - " + highAndLow;
-
             if (vector.size() > 0) {
                 ContentValues[] cvArray = new ContentValues[vector.size()];
                 vector.toArray(cvArray);
@@ -362,7 +303,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
             Log.d(LOG_TAG, "FetchWeatherTask Completed." + vector.size() + " inserted");
         }
 
-        return resultStrs;
     }
 
     /**
@@ -375,8 +315,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String []> {
      * @return the row ID of the added location
      */
     private long addLocation(String locationSetting, String cityName, double lat, double lon) {
-
-        Log.v(LOG_TAG, "inserting " + cityName + " coord: " + lat + ", " + lon);
 
         // check if the location with the the city name exist
         Cursor cursor = mContext.getContentResolver().query(LocationEntry.CONTENT_URI,
