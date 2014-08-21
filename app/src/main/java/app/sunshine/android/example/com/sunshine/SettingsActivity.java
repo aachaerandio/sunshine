@@ -6,6 +6,8 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
+import app.sunshine.android.example.com.sunshine.data.WeatherContract;
+
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
  * handset devices, settings are presented as a single list. On tablets,
@@ -18,6 +20,11 @@ import android.preference.PreferenceManager;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
+
+    // since we use the preference change initially to populate the summary
+    // field, we'll ignore that change at start of the activity
+    boolean mBindingPreference;
+
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -43,6 +50,8 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
      * is changed.)
      */
     private void bindPreferenceSummaryToValue(Preference preference) {
+        mBindingPreference = true;
+
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(this);
 
@@ -52,11 +61,26 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));
+
+        mBindingPreference = false;
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
         String stringValue = value.toString();
+        // Check if I'm calling onPreferenceChange in the binding step or on an actual preference change later
+        // I'm not actually binding preferences so: execute a new FetchWeatherTask if there's a change in Location
+        // are we starting the preference activity?
+        if ( !mBindingPreference ) {
+            if (preference.getKey().equals(getString(R.string.pref_location_key))) {
+                FetchWeatherTask weatherTask = new FetchWeatherTask(this);
+                String location = value.toString();
+                weatherTask.execute(location);
+            } else {
+                // notify code that weather may be impacted (to allow our cursor to update)
+                getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
+            }
+        }
 
         if (preference instanceof ListPreference) {
             // For list pref_general, look up the correct display value in

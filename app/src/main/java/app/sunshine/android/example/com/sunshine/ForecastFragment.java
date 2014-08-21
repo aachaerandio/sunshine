@@ -190,7 +190,18 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onStart() {
         super.onStart();
-        updateWeather();
+        // I no longer want to fetch the weather data every time the activity starts, since I'm storing it in a database now
+        //updateWeather();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Check to see if location preference changed when the activity resumed, and if so, restart the loader
+        // that way URI is changed
+        if(mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
+            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+        }
     }
 
     @Override
@@ -205,7 +216,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         String mLocation = Utility.getPreferredLocation(getActivity());
 
-        // Build the Uri with location and start date
+        // Build the URI with location and start date
         Uri weatherForLocationUri = WeatherEntry.buildWeatherLocationWithStartDate(mLocation, startDate);
 
         // Create a CursorLoader that will create a Cursor for the data being displayed
