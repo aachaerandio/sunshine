@@ -142,7 +142,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                     String detailText = String.format("%s - %s - %s/%s",date, desc, high, low);
 
                     Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-                    detailIntent.putExtra(Intent.EXTRA_TEXT, detailText);
+                    detailIntent.putExtra(DetailActivity.DATE, date);
                     startActivity(detailIntent);
                 }
 

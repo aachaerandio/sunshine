@@ -1,8 +1,13 @@
 package app.sunshine.android.example.com.sunshine;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.ShareActionProvider;
@@ -15,7 +20,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import app.sunshine.android.example.com.sunshine.data.WeatherContract;
+
 public class DetailActivity extends ActionBarActivity {
+
+    public static final String DATE = "forecast_date";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +62,20 @@ public class DetailActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class DetailFragment extends Fragment {
+    public static class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
         public static final String LOG_TAG = DetailFragment.class.getSimpleName();
         public static final String SHARE_HASHTAG = " #SunshineApp";
         private String mDayForecast;
+
+        private static final String[] FORECAST_COLUMNS = {
+                WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+                WeatherContract.WeatherEntry.COLUMN_DATETEXT,
+                WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
+        };
 
         public DetailFragment() {
             setHasOptionsMenu(true);
@@ -102,6 +120,42 @@ public class DetailActivity extends ActionBarActivity {
             shareIntent.putExtra(Intent.EXTRA_TEXT, mDayForecast + SHARE_HASHTAG);
 
             return shareIntent;
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+            Intent intent = getActivity().getIntent();
+            if (intent == null || !intent.hasExtra(DATE)) {
+                return null;
+            }
+            String forecastDate = intent.getStringExtra(DATE);
+            String mLocation = Utility.getPreferredLocation(getActivity());
+
+            // Build the URI with location and start date
+            Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(mLocation, forecastDate);
+
+            // Sort order
+            String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATETEXT + " ASC";
+
+            return new CursorLoader(getActivity(),
+                    weatherForLocationUri,
+                    FORECAST_COLUMNS,
+                    null,
+                    null,
+                    sortOrder
+            );
+
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
         }
     }
 }
