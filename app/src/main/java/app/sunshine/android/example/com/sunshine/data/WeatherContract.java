@@ -11,7 +11,9 @@ import java.util.Date;
 /**
  * Created by Araceli on 13/08/2014.
  */
-public class WeatherContract {
+public class
+
+        WeatherContract {
 
     // Name for the entire content provider
     public static final String CONTENT_AUTHORITY = "com.example.android.sunshine.app";

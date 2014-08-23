@@ -133,13 +133,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 Cursor cursor = mForecastAdapter.getCursor();
                 // Move to the position clicked
                 if(cursor != null && cursor.moveToPosition(position)) {
-                    String date = Utility.formatDate(cursor.getString(COL_WEATHER_DATE));
-                    String desc = cursor.getString(COL_WEATHER_DESC);
-                    boolean isMetric = Utility.isMetric(getActivity());
-                    String high = Utility.formatTemperature(cursor.getDouble(COL_WEATHER_MAX_TEMP),isMetric);
-                    String low = Utility.formatTemperature(cursor.getDouble(COL_WEATHER_MAX_TEMP), isMetric);
-
-                    String detailText = String.format("%s - %s - %s/%s",date, desc, high, low);
+                    String date = cursor.getString(COL_WEATHER_DATE);
 
                     Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
                     detailIntent.putExtra(DetailActivity.DATE, date);

@@ -20,11 +20,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import app.sunshine.android.example.com.sunshine.data.WeatherContract;
+
+import static app.sunshine.android.example.com.sunshine.data.WeatherContract.*;
 
 public class DetailActivity extends ActionBarActivity {
 
     public static final String DATE = "forecast_date";
+    public static final String LOCATION = "location";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +72,21 @@ public class DetailActivity extends ActionBarActivity {
         public static final String LOG_TAG = DetailFragment.class.getSimpleName();
         public static final String SHARE_HASHTAG = " #SunshineApp";
         private String mDayForecast;
+        private String mLocation;
+        private static final int DETAIL_LOADER = 0;
+        private ShareActionProvider mShareActionProvider;
 
         private static final String[] FORECAST_COLUMNS = {
-                WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
-                WeatherContract.WeatherEntry.COLUMN_DATETEXT,
-                WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-                WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-                WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
+                WeatherEntry.TABLE_NAME + "." + WeatherEntry._ID,
+                WeatherEntry.COLUMN_DATETEXT,
+                WeatherEntry.COLUMN_SHORT_DESC,
+                WeatherEntry.COLUMN_MAX_TEMP,
+                WeatherEntry.COLUMN_MIN_TEMP,
+                WeatherEntry.COLUMN_HUMIDITY,
+                WeatherEntry.COLUMN_PRESSURE,
+                WeatherEntry.COLUMN_WIND_SPEED,
+                WeatherEntry.COLUMN_DEGREES,
+                WeatherEntry.COLUMN_WEATHER_ID
         };
 
         public DetailFragment() {
@@ -82,17 +94,41 @@ public class DetailActivity extends ActionBarActivity {
         }
 
         @Override
+        public void onSaveInstanceState(Bundle outState) {
+            // When rotate device location is lost. I can preserve it here in the bundle.
+            outState.putString(LOCATION, mLocation);
+            super.onSaveInstanceState(outState);
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+            if (savedInstanceState != null) {
+                mLocation = savedInstanceState.getString("location");
+            }
+            super.onActivityCreated(savedInstanceState);
+        }
+
+        @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            Intent intent = getActivity().getIntent();
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-
-            if(intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
-                mDayForecast = intent.getStringExtra(Intent.EXTRA_TEXT);
+/*         Intent intent = getActivity().getIntent();
+           if(intent != null && intent.hasExtra(DetailActivity.DATE)) {
+                mDayForecast = intent.getStringExtra(DetailActivity.DATE);
                 ((TextView)rootView.findViewById(R.id.weekDay)).setText(mDayForecast);
-            }
-
+            }*/
             return rootView;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            // Check to see if location preference changed when the activity resumed, and if so, restart the loader
+            // that way URI is changed
+            if(mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
+                getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
+            }
         }
 
         @Override
@@ -105,7 +141,8 @@ public class DetailActivity extends ActionBarActivity {
             ShareActionProvider mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
 
             // Attach an intent to the  ShareActionProvider
-            if(mShareActionProvider != null) {
+            // If onLoadFinished happens before this, we can go ahead and set the share intent now.
+            if(mDayForecast != null) {
                 mShareActionProvider.setShareIntent(createShareForecastIntent());
             } else {
                 Log.d(LOG_TAG, "Share Action Provider is null");
@@ -124,19 +161,22 @@ public class DetailActivity extends ActionBarActivity {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Log.v(LOG_TAG, "In onCreateLoader");
 
             Intent intent = getActivity().getIntent();
             if (intent == null || !intent.hasExtra(DATE)) {
                 return null;
             }
             String forecastDate = intent.getStringExtra(DATE);
-            String mLocation = Utility.getPreferredLocation(getActivity());
+            Log.v(LOG_TAG, forecastDate);
+            mLocation = Utility.getPreferredLocation(getActivity());
 
             // Build the URI with location and start date
-            Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(mLocation, forecastDate);
+            Uri weatherForLocationUri = WeatherEntry.buildWeatherLocationWithDate(mLocation, forecastDate);
+            Log.v(LOG_TAG, weatherForLocationUri.toString());
 
             // Sort order
-            String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATETEXT + " ASC";
+            String sortOrder = WeatherEntry.COLUMN_DATETEXT + " ASC";
 
             return new CursorLoader(getActivity(),
                     weatherForLocationUri,
@@ -150,6 +190,32 @@ public class DetailActivity extends ActionBarActivity {
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if (!data.moveToFirst()) {
+                Log.v(LOG_TAG, "no data");
+                return;
+            }
+            String dateStr = Utility.formatDate(data.getString(data.getColumnIndex(WeatherEntry.COLUMN_DATETEXT)));
+            ((TextView)getView().findViewById(R.id.detail_date_textview)).setText(dateStr);
+
+            String description = data.getString(data.getColumnIndex(WeatherEntry.COLUMN_SHORT_DESC));
+            ((TextView)getView().findViewById(R.id.detail_desc_textview)).setText(description);
+
+            boolean isMetric = Utility.isMetric(getActivity());
+            String max = Utility.formatTemperature(data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MAX_TEMP)), isMetric);
+            ((TextView)getView().findViewById(R.id.detail_max_textview)).setText(max);
+
+            String min = Utility.formatTemperature(data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MIN_TEMP)), isMetric);
+            ((TextView)getView().findViewById(R.id.detail_min_textview)).setText(min);
+
+            // Format for share intent
+            mDayForecast = String.format("%s - %s - %s/%s", dateStr, description, max, min);
+
+            Log.v(LOG_TAG, "Forecast String: " + mDayForecast);
+
+            // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+            if (mShareActionProvider != null) {
+                mShareActionProvider.setShareIntent(createShareForecastIntent());
+            }
 
         }
 
