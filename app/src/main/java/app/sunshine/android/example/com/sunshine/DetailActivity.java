@@ -201,10 +201,10 @@ public class DetailActivity extends ActionBarActivity {
             ((TextView)getView().findViewById(R.id.detail_desc_textview)).setText(description);
 
             boolean isMetric = Utility.isMetric(getActivity());
-            String max = Utility.formatTemperature(data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MAX_TEMP)), isMetric);
+            String max = Utility.formatTemperature(getActivity(), data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MAX_TEMP)), isMetric);
             ((TextView)getView().findViewById(R.id.detail_max_textview)).setText(max);
 
-            String min = Utility.formatTemperature(data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MIN_TEMP)), isMetric);
+            String min = Utility.formatTemperature(getActivity(), data.getDouble(data.getColumnIndex(WeatherEntry.COLUMN_MIN_TEMP)), isMetric);
             ((TextView)getView().findViewById(R.id.detail_min_textview)).setText(min);
 
             // Format for share intent
