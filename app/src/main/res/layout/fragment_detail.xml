@@ -44,15 +44,13 @@
                     android:id="@+id/detail_max_textview"
                     android:textSize="96sp"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="20º"/>
+                    android:layout_height="wrap_content"/>
 
                 <TextView
                     android:id="@+id/detail_min_textview"
                     android:textSize="48sp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="12º"
                     android:textColor="#646464" />
             </LinearLayout>
 
@@ -67,8 +65,7 @@
                     android:id="@+id/detail_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:src="@drawable/art_clear"/>
+                    android:layout_gravity="center_horizontal"/>
 
                 <TextView
                     android:id="@+id/detail_desc_textview"

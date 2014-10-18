@@ -4,7 +4,6 @@ package app.sunshine.android.example.com.sunshine;
  * Created by Araceli on 23/07/2014.
  */
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,6 +35,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     // Each loader has an id
     private static final int FORECAST_LOADER = 0;
     private String mLocation;
+    private ListView listView;
+    private int mPosition = ListView.INVALID_POSITION;
+
+    private static final String SELECTED_POS = "selected_position";
 
     // For the forecast view we're showing only a small subset of the stored data.
     // Specify the columns we need.
@@ -67,6 +70,19 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     private ForecastAdapter mForecastAdapter;
 
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * Callback for when an item has been selected.
+         */
+        public void onItemSelected(String date);
+    }
+
     public ForecastFragment() {
     }
 
@@ -83,7 +99,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         // Bind Adapter to ListView
-        final ListView listView = (ListView) rootView.findViewById(R.id.listView_forecast);
+        listView = (ListView) rootView.findViewById(R.id.listView_forecast);
 
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
         listView.setAdapter(mForecastAdapter);
@@ -94,17 +110,22 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 // Move to the position clicked
                 if(cursor != null && cursor.moveToPosition(position)) {
                     String date = cursor.getString(COL_WEATHER_DATE);
-
-                    Intent detailIntent = new Intent(getActivity(), DetailActivity.class);
-                    detailIntent.putExtra(DetailActivity.DATE, date);
-                    startActivity(detailIntent);
+                    ((Callback)getActivity()).onItemSelected(date);
                 }
-
+                // When clicked, update the position
+                mPosition = position;
             }
         });
 
+        // If there's instance state, restore the position
+        // Read position from Bundle
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_POS)) {
+            // the listview probably hasn't been populated yet. Actually perform the swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(SELECTED_POS);
+        }
         return rootView;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -186,10 +207,27 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mForecastAdapter.swapCursor(data);
+        if (mPosition != ListView.INVALID_POSITION) {
+            // Use position to scroll to selected item
+            // If we don't need to restart the loader, and there's a desired position to restore to
+            listView.setSelection(mPosition);
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Store the position
+        // When tablets rotate, the currently selected list item needs to be saved.
+        // When No item is selected, mPosition will be set to Listview.INVALID_POSITION,
+        if (mPosition != ListView.INVALID_POSITION) {
+            savedInstanceState.putInt(SELECTED_POS, mPosition);
+        }
+
+        super.onSaveInstanceState(savedInstanceState);
     }
 }

@@ -57,7 +57,7 @@ public class ForecastAdapter extends CursorAdapter{
         // Read weather icon ID from cursor
         int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
         int itemViewType = getItemViewType(cursor.getPosition());
-        // Icon
+        // Get color icon for today and grey icon for future days
         if(itemViewType == VIEW_TYPE_TODAY) {
             viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
         } else if(itemViewType == VIEW_TYPE_FUTURE_DAY)  {

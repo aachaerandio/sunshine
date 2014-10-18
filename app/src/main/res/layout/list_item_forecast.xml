@@ -5,7 +5,8 @@
     android:orientation="horizontal"
     android:minHeight="?android:attr/listPreferredItemHeight"
     android:gravity="center_vertical"
-    android:padding="15dp">
+    android:padding="16dp"
+    android:background="@drawable/touch_selector">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -17,20 +18,18 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_weight="1"
-        android:paddingLeft="15dp">
+        android:paddingLeft="16dp">
 
         <TextView
             android:id="@+id/list_item_date_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tomorrow">
+            android:layout_height="wrap_content">
         </TextView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/list_item_forecast_textview"
-            android:text="Clear">
+            android:id="@+id/list_item_forecast_textview">
         </TextView>
 
     </LinearLayout>
@@ -43,15 +42,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/list_item_high_textview"
-            android:text="21º">
+            android:id="@+id/list_item_high_textview">
         </TextView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/list_item_low_textview"
-            android:text="8º">
+            android:id="@+id/list_item_low_textview">
         </TextView>
     </LinearLayout>
 

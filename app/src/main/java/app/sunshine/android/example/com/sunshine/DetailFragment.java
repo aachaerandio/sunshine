@@ -70,6 +70,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         setHasOptionsMenu(true);
     }
 
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         // When rotate device location is lost. Preserve it here in the bundle.
@@ -79,11 +80,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
             mLocation = savedInstanceState.getString("location");
         }
-        super.onActivityCreated(savedInstanceState);
+        // Remove reliance with incoming intent. Use arguments bundle instead.
+        Bundle bundle = getArguments();
+        // If bundle is null we don't init loader
+        if (bundle != null && bundle.containsKey(DetailActivity.DATE)) {
+            getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+        }
     }
 
     @Override
@@ -115,7 +121,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         super.onResume();
         // Check to see if location preference changed when the activity resumed, and if so, restart the loader
         // that way URI is changed
-        if(mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
+        // Not restart loader if the intent is null (the Detail fragment can now exist in main activity)
+        Bundle bundle = getArguments();
+        if(bundle != null && bundle.containsKey(DetailActivity.DATE) &&
+                mLocation != null && !mLocation.equals(Utility.getPreferredLocation(getActivity()))) {
             getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
         }
     }
@@ -150,14 +159,14 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        Log.v(LOG_TAG, "In onCreateLoader");
-
-        Intent intent = getActivity().getIntent();
+/*      Intent intent = getActivity().getIntent();
         if (intent == null || !intent.hasExtra(DATE)) {
             return null;
         }
-        String forecastDate = intent.getStringExtra(DATE);
-        Log.v(LOG_TAG, forecastDate);
+        String forecastDate = intent.getStringExtra(DATE);*/
+
+        String forecastDate = getArguments().getString(DetailActivity.DATE);
+
         mLocation = Utility.getPreferredLocation(getActivity());
 
         // Build the URI with location and start date
@@ -183,8 +192,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             Log.v(LOG_TAG, "no data");
             return;
         }
-
+        // Read weather condition ID
         int weatherId = data.getInt(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID));
+        // get the ion that fits with the id
         mIcon.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
 
         String dateStr = data.getString(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_DATETEXT));
