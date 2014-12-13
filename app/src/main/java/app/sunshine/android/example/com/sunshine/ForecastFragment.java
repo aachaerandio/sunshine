@@ -37,6 +37,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private String mLocation;
     private ListView listView;
     private int mPosition = ListView.INVALID_POSITION;
+    private boolean mUseTodayLayout;
 
     private static final String SELECTED_POS = "selected_position";
 
@@ -102,6 +103,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         listView = (ListView) rootView.findViewById(R.id.listView_forecast);
 
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+        mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+
         listView.setAdapter(mForecastAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -123,6 +126,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             // the listview probably hasn't been populated yet. Actually perform the swapout in onLoadFinished.
             mPosition = savedInstanceState.getInt(SELECTED_POS);
         }
+
+
         return rootView;
     }
 
@@ -214,7 +219,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-    @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
     }
@@ -229,5 +233,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
 
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        mUseTodayLayout = useTodayLayout;
+        // Pass in the value to the forecast adapter.
+        // Can be null because MainActivity onCreate will happens before onCreateView
+        if(mForecastAdapter != null){
+            mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+        }
     }
 }
