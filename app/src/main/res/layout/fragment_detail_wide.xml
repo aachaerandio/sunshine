@@ -12,17 +12,24 @@
         <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:minWidth="56dp">
                 <!-- Day and Date-->
                 <TextView
                     android:id="@+id/detail_day"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:minWidth="120dp"
+                    android:textSize="24sp"/>
 
                 <TextView
                     android:id="@+id/detail_date_textview"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/grey_700"
+                    android:fontFamily="sans-serif-condensed"
+                    android:textSize="20sp"/>
             </LinearLayout>
 
         <!-- Main content: high, low, art, weather state -->
@@ -35,28 +42,42 @@
             <TextView
                 android:id="@+id/detail_max_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:textSize="96sp"/>
 
             <TextView
                 android:id="@+id/detail_min_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_700"
+                android:textSize="48sp"
+                android:layout_marginLeft="8dp"/>
 
             <!-- Humidity, Wind, Pressure -->
             <TextView
                 android:id="@+id/detail_humidity_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?android:textAppearanceLarge"/>
 
             <TextView
                 android:id="@+id/detail_pressure_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?android:textAppearanceLarge"/>
 
             <TextView
                 android:id="@+id/detail_wind_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?android:textAppearanceLarge"/>
         </LinearLayout>
 
         <!-- Icon, detail forecast desc -->
@@ -64,7 +85,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginLeft="16dp">
 
             <ImageView
                 android:id="@+id/detail_icon"
@@ -74,7 +96,10 @@
             <TextView
                 android:id="@+id/detail_desc_textview"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:textColor="@color/grey_700"/>
         </LinearLayout>
 
     </LinearLayout>
