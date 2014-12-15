@@ -41,6 +41,12 @@
             android:name=".data.WeatherProvider"
             android:enabled="true"
             android:exported="true"/>
+
+        <service
+            android:name=".service.SunshineService"/>
+        <receiver
+            android:name=".service.SunshineService$AlarmReceiver"
+            android:enabled="true"/>
     </application>
 
 </manifest>

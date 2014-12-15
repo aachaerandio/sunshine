@@ -4,6 +4,10 @@ package app.sunshine.android.example.com.sunshine;
  * Created by Araceli on 23/07/2014.
  */
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,6 +27,7 @@ import android.widget.ListView;
 import java.util.Date;
 
 import app.sunshine.android.example.com.sunshine.data.WeatherContract;
+import app.sunshine.android.example.com.sunshine.service.SunshineService;
 
 import static app.sunshine.android.example.com.sunshine.data.WeatherContract.LocationEntry;
 import static app.sunshine.android.example.com.sunshine.data.WeatherContract.WeatherEntry;
@@ -71,6 +76,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public static final int COL_WEATHER_CONDITION_ID = 6;
 
     private ForecastAdapter mForecastAdapter;
+
+    private AlarmManager alarmMgr;
 
 
     /**
@@ -160,12 +167,23 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateWeather() {
-        FetchWeatherTask weatherTask = new FetchWeatherTask(getActivity());
-        // Refactor preferences with utility class
+        // Pass the location into the service
         String location = Utility.getPreferredLocation(getActivity());
 
-        // Pass the location into the fetch weather task
-        weatherTask.execute(location);
+        Intent alarmIntent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
+        alarmIntent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
+
+        // wrap in a PendingIntent. We are going to use it only once
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent,
+                PendingIntent.FLAG_ONE_SHOT); //getBroadcast(context, 0, i, 0)
+
+        alarmMgr = (AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
+
+        // Set the AlarmManager to wake up the system, so that it fires the code inside of AlarmReceiver.
+        // Set to trigger 5 seconds from now
+        //alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 5 * 1000, pendingIntent);
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5 * 1000, pendingIntent);
+
     }
 
     @Override
