@@ -16,7 +16,7 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
 
-    boolean mTwoPane;
+    public static boolean mTwoPane;
     DetailFragment detailFragment;
 
     @Override

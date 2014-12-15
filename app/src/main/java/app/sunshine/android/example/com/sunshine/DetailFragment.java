@@ -204,6 +204,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         String description = data.getString(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC));
         mDesc.setText(description);
 
+        // For accessibility, content description
+        mIcon.setContentDescription(description);
+
         boolean isMetric = Utility.isMetric(getActivity());
         String max = Utility.formatTemperature(getActivity(), data.getDouble(data.getColumnIndex(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP)), isMetric);
         mMax.setText(max);

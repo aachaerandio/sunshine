@@ -38,6 +38,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private ListView listView;
     private int mPosition = ListView.INVALID_POSITION;
     private boolean mUseTodayLayout;
+    View rootView;
 
     private static final String SELECTED_POS = "selected_position";
 
@@ -97,7 +98,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         // Bind Adapter to ListView
         listView = (ListView) rootView.findViewById(R.id.listView_forecast);
@@ -215,7 +216,26 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mPosition != ListView.INVALID_POSITION) {
             // Use position to scroll to selected item
             // If we don't need to restart the loader, and there's a desired position to restore to
-            listView.setSelection(mPosition);
+            listView.smoothScrollToPosition(mPosition);
+
+        // Workaround to get autoselected when activity first launch
+            if (MainActivity.mTwoPane) {
+                listView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        listView.performItemClick(rootView, mPosition, listView.getAdapter().getItemId(mPosition));
+                    }
+                });
+            }
+        } else if (MainActivity.mTwoPane) {
+            listView.post(new Runnable() {
+                @Override
+                public void run() {
+                    listView.performItemClick(rootView, 0, listView.getAdapter().getItemId(0));
+                }
+            });
+
+
         }
     }
 
