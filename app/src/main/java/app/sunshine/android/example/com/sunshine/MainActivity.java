@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import app.sunshine.android.example.com.sunshine.sync.SunshineSyncAdapter;
+
 
 public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback{
 
@@ -42,6 +44,11 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
 
         ForecastFragment forecastFragment = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
         forecastFragment.setUseTodayLayout(!mTwoPane);
+
+       /* The sync adapter is initialized.
+          During initialization, getSyncAccount is called. getSyncAccount will create a new account if no sunshine.example.com account exists.
+          If this is the case, onAccountCreated will be called.*/
+        SunshineSyncAdapter.initializeSyncAdapter(this);
     }
 
 
