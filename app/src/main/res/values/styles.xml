@@ -6,15 +6,15 @@
         <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine</item>
     </style>
 
+    <!-- Main activity theme. -->
+    <style name="ForecastTheme" parent="AppTheme">
+        <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine.NoTitle</item>
+    </style>
+
     <!-- ActionBar style -->
     <style name="ActionBar.Solid.Sunshine"
         parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
         <item name="background">@color/sunshine_blue</item>
-    </style>
-
-    <!-- Main activity theme. -->
-    <style name="ForecastTheme" parent="AppTheme">
-        <item name="actionBarStyle">@style/ActionBar.Solid.Sunshine.NoTitle</item>
     </style>
 
     <!-- Main activity action bar style -->

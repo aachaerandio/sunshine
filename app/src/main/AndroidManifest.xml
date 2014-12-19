@@ -40,7 +40,7 @@
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="MainActivity"/>
+                android:value="app.sunshine.android.example.com.sunshine.MainActivity"/>
         </activity>
 
         <provider
